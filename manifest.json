@@ -3,9 +3,13 @@
   "name": "HN Latest News",
   "version": "1.0.0",
   "description": "Shows the latest 5 stories from Hacker News, refreshed every hour.",
-  "permissions": ["storage", "alarms"],
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
   "host_permissions": [
-    "https://hacker-news.firebaseio.com/*"
+    "https://hacker-news.firebaseio.com/*",
+    "https://hn.algolia.com/*"
   ],
   "background": {
     "service_worker": "background.js",

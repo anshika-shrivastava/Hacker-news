@@ -2,17 +2,23 @@
  * popup.js
  * --------
  * Reads cached stories from chrome.storage and renders them as cards.
- * Also handles the manual refresh button.
+ * Handles manual refresh and keyword search via HN Algolia API.
  */
 
 import { getStories, getLastUpdated, saveStories } from "./js/storage.js";
-import { fetchTopStories } from "./js/api.js";
+import { fetchTopStories, searchStories } from "./js/api.js";
 
 // --- DOM references ---------------------------------------------------------
 const newsContainer = document.getElementById("news-container");
 const loadingEl = document.getElementById("loading");
 const lastUpdatedEl = document.getElementById("last-updated");
 const refreshBtn = document.getElementById("refresh-btn");
+const searchInput = document.getElementById("search-input");
+const clearSearchBtn = document.getElementById("clear-search-btn");
+
+// --- State ------------------------------------------------------------------
+let searchTimeout = null;
+let isSearchMode = false;
 
 // --- Helpers ----------------------------------------------------------------
 
@@ -84,8 +90,6 @@ function createStoryCard(story, index) {
     card.rel = "noopener";
     card.title = story.title;
 
-    const domain = extractDomain(story.url);
-
     card.innerHTML = `
     <div class="story-rank">${index + 1}</div>
     <div class="story-body">
@@ -105,20 +109,36 @@ function createStoryCard(story, index) {
 /**
  * Render an array of stories into the container.
  * @param {Object[]} stories
+ * @param {string} [label] — Optional label to show above the cards (e.g. "Search results")
  */
-function renderStories(stories) {
+function renderStories(stories, label) {
     // Remove loading indicator and previous cards
     loadingEl.classList.add("hidden");
 
-    // Remove existing cards only
-    newsContainer.querySelectorAll(".story-card, .error-message").forEach((el) => el.remove());
+    // Remove existing cards, labels, and messages
+    newsContainer.querySelectorAll(".story-card, .error-message, .search-label, .no-results").forEach((el) => el.remove());
+
+    // Add label if provided
+    if (label) {
+        const labelEl = document.createElement("div");
+        labelEl.className = "search-label";
+        labelEl.textContent = label;
+        newsContainer.appendChild(labelEl);
+    }
 
     if (!stories || stories.length === 0) {
-        const errDiv = document.createElement("div");
-        errDiv.className = "error-message";
-        errDiv.innerHTML = `<p>No stories cached yet.</p><button id="retry-btn">Retry</button>`;
-        newsContainer.appendChild(errDiv);
-        errDiv.querySelector("#retry-btn").addEventListener("click", handleRefresh);
+        if (isSearchMode) {
+            const noRes = document.createElement("div");
+            noRes.className = "no-results";
+            noRes.innerHTML = `<div class="no-results-emoji">🔍</div><p>No stories found for this search.<br>Try a different keyword.</p>`;
+            newsContainer.appendChild(noRes);
+        } else {
+            const errDiv = document.createElement("div");
+            errDiv.className = "error-message";
+            errDiv.innerHTML = `<p>No stories cached yet.</p><button id="retry-btn">Retry</button>`;
+            newsContainer.appendChild(errDiv);
+            errDiv.querySelector("#retry-btn").addEventListener("click", handleRefresh);
+        }
         return;
     }
 
@@ -148,15 +168,87 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// --- Search -----------------------------------------------------------------
+
+/**
+ * Perform a search and render results.
+ * @param {string} query
+ */
+async function handleSearch(query) {
+    if (!query || query.trim().length === 0) {
+        // Clear search — go back to cached top stories
+        isSearchMode = false;
+        clearSearchBtn.classList.add("hidden");
+        const stories = await getStories();
+        renderStories(stories);
+        await updateTimestamp();
+        return;
+    }
+
+    isSearchMode = true;
+    clearSearchBtn.classList.remove("hidden");
+
+    // Show loading state
+    newsContainer.querySelectorAll(".story-card, .error-message, .search-label, .no-results").forEach((el) => el.remove());
+    loadingEl.classList.remove("hidden");
+
+    try {
+        const results = await searchStories(query.trim(), 5);
+        renderStories(results, `Results for "${query.trim()}"`);
+    } catch (err) {
+        console.error("[HN Popup] Search failed:", err);
+        loadingEl.classList.add("hidden");
+        const errDiv = document.createElement("div");
+        errDiv.className = "error-message";
+        errDiv.innerHTML = `<p>Search failed. Please try again.</p>`;
+        newsContainer.appendChild(errDiv);
+    }
+}
+
+/**
+ * Debounced search handler — waits 400ms after the user stops typing.
+ */
+function onSearchInput() {
+    clearTimeout(searchTimeout);
+    const query = searchInput.value;
+
+    if (!query) {
+        clearSearchBtn.classList.add("hidden");
+    } else {
+        clearSearchBtn.classList.remove("hidden");
+    }
+
+    searchTimeout = setTimeout(() => handleSearch(query), 400);
+}
+
+/**
+ * Clear the search input and go back to top stories.
+ */
+function clearSearch() {
+    searchInput.value = "";
+    clearSearchBtn.classList.add("hidden");
+    handleSearch("");
+}
+
+searchInput.addEventListener("input", onSearchInput);
+clearSearchBtn.addEventListener("click", clearSearch);
+
 // --- Manual refresh ---------------------------------------------------------
 
 async function handleRefresh() {
     refreshBtn.classList.add("spinning");
     try {
-        const stories = await fetchTopStories(5);
-        await saveStories(stories);
-        renderStories(stories);
-        await updateTimestamp();
+        if (isSearchMode && searchInput.value.trim()) {
+            // Re-run the current search
+            const results = await searchStories(searchInput.value.trim(), 5);
+            renderStories(results, `Results for "${searchInput.value.trim()}"`);
+        } else {
+            // Refresh top stories
+            const stories = await fetchTopStories(5);
+            await saveStories(stories);
+            renderStories(stories);
+            await updateTimestamp();
+        }
     } catch (err) {
         console.error("[HN Popup] Refresh failed:", err);
     } finally {
