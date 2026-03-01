@@ -453,6 +453,45 @@ body::-webkit-scrollbar-thumb {
   transform: none;
 }
 
+.whatsapp-setup {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.setup-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.setup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  background: #fff;
+  padding: 4px;
+}
+
+.setup-instruction {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.setup-instruction b {
+  color: var(--accent);
+}
+
 .sms-status {
   margin-top: 6px;
   padding: 6px 10px;
