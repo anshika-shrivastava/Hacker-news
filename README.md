@@ -16,7 +16,7 @@ If you are a new user installing this extension, you need to join the Twilio Wha
 You only need to do this once per WhatsApp account.
 
 1. **Scan the QR Code** below using your phone's camera, OR
-2. Save the contact **+1 (415) 523-8886** and message it on WhatsApp with your specific join keyword (e.g., `join <keyword>`).
+2. Save the contact **+1 (415) 523-8886** and message it on WhatsApp with: `join breathe-within`
 
 ![WhatsApp QR Code](images/whatsapp-qr.png)
 
