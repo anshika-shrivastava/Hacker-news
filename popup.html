@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HN Latest News</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header -->
+  <header id="header">
+    <div class="header-left">
+      <div class="logo">Y</div>
+      <h1>Hacker News</h1>
+    </div>
+    <button id="refresh-btn" title="Refresh now">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- News cards container -->
+  <main id="news-container">
+    <!-- Cards are injected here by popup.js -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading stories…</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <span id="last-updated">Updated: —</span>
+    <a href="https://news.ycombinator.com" target="_blank" rel="noopener">Visit HN ↗</a>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
