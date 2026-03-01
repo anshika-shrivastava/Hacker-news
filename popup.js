@@ -264,7 +264,7 @@ const phoneInput = document.getElementById("phone-input");
 const sendSmsBtn = document.getElementById("send-sms-btn");
 const smsStatus = document.getElementById("sms-status");
 
-const SERVER_URL = "http://localhost:3000";
+const SERVER_URL = "https://hn-news-api.blogapp.workers.dev";
 
 /**
  * Show a status message with a type (sending, success, error).

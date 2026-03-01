@@ -10,7 +10,8 @@
   "host_permissions": [
     "https://hacker-news.firebaseio.com/*",
     "https://hn.algolia.com/*",
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://hn-news-api.blogapp.workers.dev/*"
   ],
   "background": {
     "service_worker": "background.js",
