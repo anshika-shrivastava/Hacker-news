@@ -258,6 +258,80 @@ async function handleRefresh() {
 
 refreshBtn.addEventListener("click", handleRefresh);
 
+// --- SMS notification -------------------------------------------------------
+
+const phoneInput = document.getElementById("phone-input");
+const sendSmsBtn = document.getElementById("send-sms-btn");
+const smsStatus = document.getElementById("sms-status");
+
+const SERVER_URL = "http://localhost:3000";
+
+/**
+ * Show a status message with a type (sending, success, error).
+ */
+function showSmsStatus(message, type) {
+    smsStatus.textContent = message;
+    smsStatus.className = `sms-status ${type}`;
+}
+
+/**
+ * Collect the currently displayed stories and send them via SMS.
+ */
+async function handleSendSMS() {
+    const phone = phoneInput.value.trim();
+
+    if (!phone) {
+        showSmsStatus("Please enter your WhatsApp number.", "error");
+        return;
+    }
+
+    // Validate phone format
+    if (!/^\+[1-9]\d{6,14}$/.test(phone)) {
+        showSmsStatus("Use international format: +91XXXXXXXXXX", "error");
+        return;
+    }
+
+    // Collect stories currently visible in the popup
+    let stories;
+    if (isSearchMode && searchInput.value.trim()) {
+        stories = await searchStories(searchInput.value.trim(), 5);
+    } else {
+        stories = await getStories();
+    }
+
+    if (!stories || stories.length === 0) {
+        showSmsStatus("No stories to send. Load some first!", "error");
+        return;
+    }
+
+    // Disable button and show sending state
+    sendSmsBtn.disabled = true;
+    showSmsStatus("Sending SMS…", "sending");
+
+    try {
+        const response = await fetch(`${SERVER_URL}/api/send-news`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, stories }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showSmsStatus("✅ WhatsApp message sent!", "success");
+        } else {
+            showSmsStatus(`❌ ${data.error || "Failed to send message."}`, "error");
+        }
+    } catch (error) {
+        console.error("[HN Popup] SMS failed:", error);
+        showSmsStatus("❌ Server not running. Start: cd server && npm start", "error");
+    } finally {
+        sendSmsBtn.disabled = false;
+    }
+}
+
+sendSmsBtn.addEventListener("click", handleSendSMS);
+
 // --- Initial load -----------------------------------------------------------
 
 (async () => {

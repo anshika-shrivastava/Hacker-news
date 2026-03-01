@@ -1,0 +1,5 @@
+# server dependencies
+node_modules/
+
+# environment file with secrets
+.env

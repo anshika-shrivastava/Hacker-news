@@ -50,6 +50,24 @@
     </div>
   </main>
 
+  <!-- SMS Notification section -->
+  <div id="sms-section">
+    <div class="sms-header">📲 Send news via WhatsApp</div>
+    <div class="sms-input-wrapper">
+      <input type="tel" id="phone-input" placeholder="+91XXXXXXXXXX (WhatsApp number)" autocomplete="off"
+        spellcheck="false">
+      <button id="send-sms-btn" title="Send SMS">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+        Send
+      </button>
+    </div>
+    <div id="sms-status" class="sms-status hidden"></div>
+  </div>
+
   <!-- Footer -->
   <footer id="footer">
     <span id="last-updated">Updated: —</span>
